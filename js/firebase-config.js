@@ -2,18 +2,15 @@
 //
 // IMPORTANTE: esses valores NÃO são segredos. Diferente de uma senha ou chave de API
 // tradicional, o firebaseConfig é seguro para ficar público no código do site — quem
-// realmente protege os dados são as REGRAS DE SEGURANÇA do Firestore (ainda não
-// escritas; é o próximo passo depois destas telas).
-//
-// Onde pegar esses valores: Firebase Console > Configurações do projeto >
-// "Seus apps" > ícone de engrenagem > "Config" (ou crie um app da Web se ainda não tiver um).
+// realmente protege os dados são as REGRAS DE SEGURANÇA do Firestore (é o nosso
+// próximo passo depois deste).
 const firebaseConfig = {
-  apiKey: "SUBSTITUA_AQUI",
-  authDomain: "SUBSTITUA_AQUI.firebaseapp.com",
-  projectId: "SUBSTITUA_AQUI",
-  storageBucket: "SUBSTITUA_AQUI.appspot.com",
-  messagingSenderId: "SUBSTITUA_AQUI",
-  appId: "SUBSTITUA_AQUI",
+  apiKey: "AIzaSyDyVV5qweu2-GC0780Vsv_havrVnuQ3DoM",
+  authDomain: "pesquisa-mercado-braganca.firebaseapp.com",
+  projectId: "pesquisa-mercado-braganca",
+  storageBucket: "pesquisa-mercado-braganca.firebasestorage.app",
+  messagingSenderId: "959690051819",
+  appId: "1:959690051819:web:a69511cfd4e9dc4c366eae",
 };
 
 // Carregamos o SDK do Firebase direto de um CDN (sem npm, sem build) porque o site
