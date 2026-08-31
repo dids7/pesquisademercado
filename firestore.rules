@@ -40,6 +40,15 @@ service cloud.firestore {
       allow write: if ehAdmin();
     }
 
+    // Regra à parte pra consultas collectionGroup em "projects" (é o que a tela de projetos usa
+    // pra listar projetos de todos os clientes numa consulta só). A regra aninhada dentro de
+    // clients/{clientId} logo abaixo só vale pra acesso por caminho literal — collectionGroup
+    // exige essa sintaxe com {path=**} pra também ser autorizado, senão o Firestore nega a
+    // consulta inteira mesmo que o dado e o papel do usuário estejam certos.
+    match /{path=**}/projects/{projectId} {
+      allow read: if ehAdmin() || (ehColetor() && resource.data.status == 'coleta_aberta');
+    }
+
     match /clients/{clientId} {
       allow read, write: if ehAdmin();
 
