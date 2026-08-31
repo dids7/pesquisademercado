@@ -221,3 +221,348 @@ body {
   padding: 48px 16px;
   font-size: 14px;
 }
+
+.project-card .info {
+  flex: 1;
+}
+
+.card-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 14px;
+}
+
+.card-actions a {
+  font-size: 13px;
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.card-actions a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Páginas largas (questionários, coleta, resultados) ---------- */
+.page-content--wide {
+  max-width: 980px;
+}
+
+.breadcrumb {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.breadcrumb a {
+  color: var(--color-text-muted);
+}
+
+.page-content h2 {
+  font-size: 18px;
+  margin: 0 0 4px;
+}
+
+.page-subtitle {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  margin: 0 0 20px;
+}
+
+/* ---------- Tela de questionários ---------- */
+.builder-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .builder-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+
+.panel h3 {
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+
+.bank-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+}
+
+.bank-item:last-child {
+  border-bottom: none;
+}
+
+.bank-item .bank-item-text {
+  flex: 1;
+}
+
+.bank-item .bank-item-meta {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.btn-small {
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.btn-small:hover {
+  background: var(--color-bg);
+}
+
+.btn-small--accent {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.btn-small--danger {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.draft-item {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.draft-item-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.draft-item-buttons {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.field-inline {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.field-inline .field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 4px 0 0;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 16px 0;
+}
+
+/* ---------- Tela de coleta ---------- */
+.question-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.question-card .question-text {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 10px;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.option-row input {
+  margin: 0;
+}
+
+.scale-options {
+  display: flex;
+  gap: 8px;
+}
+
+.scale-options label {
+  flex: 1;
+  text-align: center;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px 0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.scale-options input {
+  display: none;
+}
+
+.scale-options input:checked + span {
+  font-weight: 700;
+}
+
+.scale-options label:has(input:checked) {
+  border-color: var(--color-accent);
+  background: #eaf3de;
+  color: var(--color-accent-dark);
+}
+
+.warning-banner {
+  background: #faeeda;
+  color: #633806;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.sticky-actions {
+  position: sticky;
+  bottom: 0;
+  background: var(--color-bg);
+  padding: 16px 0 24px;
+  display: flex;
+  gap: 10px;
+}
+
+.sticky-actions .btn {
+  width: auto;
+  flex: 1;
+}
+
+.autosave-status {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin: 0 0 8px;
+}
+
+.entrevista-item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+/* ---------- Tela de resultados ---------- */
+.result-question {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.result-question h4 {
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+
+.result-bar-row {
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.result-bar-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.result-bar-track {
+  background: var(--color-bg);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.result-bar-fill {
+  background: var(--color-accent);
+  height: 100%;
+}
+
+.free-text-answer {
+  background: var(--color-bg);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.summary-strip {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.summary-tile {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  flex: 1;
+}
+
+.summary-tile .value {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.summary-tile .label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}

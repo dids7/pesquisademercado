@@ -82,16 +82,24 @@ async function carregarProjetos(role) {
 
   listaEl.innerHTML = "";
   resultado.forEach((docSnap) => {
-    listaEl.appendChild(criarCardProjeto(docSnap.data()));
+    listaEl.appendChild(criarCardProjeto(docSnap, role));
   });
 }
 
-function criarCardProjeto(projeto) {
+function criarCardProjeto(docSnap, role) {
+  const projeto = docSnap.data();
   const card = document.createElement("div");
   card.className = "project-card";
 
   const statusClasse = `badge--${projeto.status}`;
   const statusTexto = STATUS_LABEL[projeto.status] || projeto.status;
+
+  // O documento de projeto vive em clients/{clientId}/projects/{projectId}. Como a consulta
+  // usa collectionGroup, o clientId não vem nos dados do documento — pegamos ele do caminho
+  // do próprio snapshot (parent = coleção "projects", parent.parent = o documento do cliente).
+  const clientId = docSnap.ref.parent.parent.id;
+  const projectId = docSnap.id;
+  const params = `?clientId=${encodeURIComponent(clientId)}&projectId=${encodeURIComponent(projectId)}`;
 
   // clientName vem duplicado (denormalizado) dentro do próprio documento de projeto.
   // O motivo: sem isso, mostrar o nome do cliente em cada card exigiria uma leitura
@@ -102,9 +110,25 @@ function criarCardProjeto(projeto) {
     <div class="info">
       <h3>${projeto.title || "(sem título)"}</h3>
       <div class="client-name">${projeto.clientName || "Cliente não informado"}</div>
+      <div class="card-actions">${linksDoCard(role, projeto.status, params)}</div>
     </div>
     <span class="badge ${statusClasse}">${statusTexto}</span>
   `;
 
   return card;
+}
+
+// Admin monta questionário e vê resultados agregados de todo mundo. Coletor só aplica a
+// entrevista (e só quando a coleta está aberta) e vê o total que ele mesmo coletou.
+function linksDoCard(role, status, params) {
+  if (role === "admin") {
+    return `
+      <a href="questionarios.html${params}">Questionário</a>
+      <a href="resultados.html${params}">Resultados</a>
+    `;
+  }
+  if (status === "coleta_aberta") {
+    return `<a href="coleta.html${params}">Coletar</a>`;
+  }
+  return "";
 }

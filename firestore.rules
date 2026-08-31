@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Funções auxiliares ---
+    // Centralizam as checagens repetidas nas regras abaixo, pra não duplicar lógica
+    // e reduzir a chance de esquecer uma condição numa regra e deixar buraco de segurança.
+
+    function estaLogado() {
+      return request.auth != null;
+    }
+
+    function papelDoUsuario() {
+      // Lê o próprio documento em users/{uid} pra saber o role de quem está fazendo a requisição.
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function ehAdmin() {
+      return estaLogado() && papelDoUsuario() == 'admin';
+    }
+
+    function ehColetor() {
+      return estaLogado() && papelDoUsuario() == 'coletor';
+    }
+
+    // --- users ---
+    // Cada pessoa só lê o próprio documento (é o que a tela de login usa pra saber o role).
+    // Só admin cria/edita usuários — a criação continua manual pelo console nesta fase,
+    // esta regra só garante que ninguém edite seu próprio "role" pelo console do navegador.
+    match /users/{uid} {
+      allow read: if estaLogado() && (request.auth.uid == uid || ehAdmin());
+      allow write: if ehAdmin();
+    }
+
+    // --- questionBank ---
+    // Todo mundo logado pode ler (precisa pra montar e para exibir o questionário).
+    // Só admin edita — é o banco reutilizável entre clientes/projetos.
+    match /questionBank/{questionId} {
+      allow read: if estaLogado();
+      allow write: if ehAdmin();
+    }
+
+    match /clients/{clientId} {
+      allow read, write: if ehAdmin();
+
+      match /projects/{projectId} {
+        // Admin vê e edita tudo. Coletor só lê projetos com coleta aberta — não faz sentido
+        // mostrar pra ele (nem deixar ler) um projeto encerrado ou ainda em relatório.
+        allow read: if ehAdmin() || (ehColetor() && resource.data.status == 'coleta_aberta');
+        allow write: if ehAdmin();
+
+        match /questionnaires/{questionnaireId} {
+          allow read: if ehAdmin() || (ehColetor() &&
+            get(/databases/$(database)/documents/clients/$(clientId)/projects/$(projectId)).data.status == 'coleta_aberta');
+          allow write: if ehAdmin();
+
+          match /versions/{versionId} {
+            allow read: if ehAdmin() || (ehColetor() &&
+              get(/databases/$(database)/documents/clients/$(clientId)/projects/$(projectId)).data.status == 'coleta_aberta');
+            allow write: if ehAdmin();
+
+            match /responses/{responseId} {
+              // Isolamento por dono: cada entrevistador só lê/edita as respostas que ele mesmo
+              // coletou (interviewerId == uid de quem está logado). Decisão pensada pra Fase 2,
+              // onde a mesma pesquisa pode ser atribuída a dois entrevistadores sem que um veja o outro.
+              allow read, update: if ehAdmin() ||
+                (ehColetor() && resource.data.interviewerId == request.auth.uid);
+              allow create: if ehAdmin() ||
+                (ehColetor() && request.resource.data.interviewerId == request.auth.uid);
+              // Ninguém apaga resposta pelo app — dado de pesquisa não se perde por engano.
+              allow delete: if ehAdmin();
+            }
+          }
+        }
+      }
+    }
+  }
+}
