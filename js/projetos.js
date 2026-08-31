@@ -1,16 +1,21 @@
 import { db } from "./firebase-config.js";
 import { exigirLogin, logout } from "./auth.js";
+import { escapeHtml } from "./comum.js";
 import {
   doc,
   getDoc,
+  collection,
+  addDoc,
   collectionGroup,
   query,
   where,
   orderBy,
   getDocs,
+  serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const listaEl = document.getElementById("lista-projetos");
+const areaNovaPesquisaEl = document.getElementById("area-nova-pesquisa");
 const userInfoEl = document.getElementById("user-info");
 const btnLogout = document.getElementById("btn-logout");
 
@@ -45,8 +50,128 @@ exigirLogin(async (user) => {
   }
 
   const { role } = usuarioSnap.data();
+  if (role === "admin") {
+    await montarAreaNovaPesquisa();
+  }
   await carregarProjetos(role);
 });
+
+// --- Nova pesquisa (admin) ---
+// Formulário simples pra criar cliente + projeto sem precisar mexer direto no
+// Firestore Console — antes só dava pra fazer isso manualmente (era assim que os
+// dados de teste tinham que ser criados).
+
+async function montarAreaNovaPesquisa() {
+  const clientesSnap = await getDocs(collection(db, "clients"));
+  const clientes = clientesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+  areaNovaPesquisaEl.innerHTML = `
+    <button class="btn" id="btn-abrir-nova-pesquisa" style="width:auto; margin-bottom: 20px;">+ Nova pesquisa</button>
+    <div class="panel" id="form-nova-pesquisa" style="display:none; margin-bottom: 20px;">
+      <h3>Nova pesquisa</h3>
+      <div class="field">
+        <label for="np-cliente">Cliente</label>
+        <select id="np-cliente">
+          ${clientes.map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("")}
+          <option value="__novo__">+ Novo cliente</option>
+        </select>
+      </div>
+      <div class="field" id="np-campo-novo-cliente" style="display:${clientes.length === 0 ? "block" : "none"};">
+        <label for="np-novo-cliente">Nome do novo cliente</label>
+        <input type="text" id="np-novo-cliente" />
+      </div>
+      <div class="field">
+        <label for="np-titulo">Título do projeto</label>
+        <input type="text" id="np-titulo" placeholder="ex: Pesquisa piloto" />
+      </div>
+      <div class="field">
+        <label for="np-tema">Tema</label>
+        <input type="text" id="np-tema" placeholder="ex: Validação de app de delivery" />
+      </div>
+      <div class="field-inline">
+        <div class="field">
+          <label for="np-meta">Meta de respondentes</label>
+          <input type="text" id="np-meta" inputmode="numeric" placeholder="ex: 80" />
+        </div>
+        <div class="field">
+          <label for="np-status">Status inicial</label>
+          <select id="np-status">
+            ${Object.entries(STATUS_LABEL)
+              .map(([valor, label]) => `<option value="${valor}" ${valor === "coleta_aberta" ? "selected" : ""}>${label}</option>`)
+              .join("")}
+          </select>
+        </div>
+      </div>
+      <button class="btn" id="btn-criar-pesquisa" style="width:auto;">Criar</button>
+      <button class="btn btn--secondary" id="btn-cancelar-nova-pesquisa" style="width:auto; margin-left: 8px;">Cancelar</button>
+    </div>
+  `;
+
+  const formEl = document.getElementById("form-nova-pesquisa");
+  const selectClienteEl = document.getElementById("np-cliente");
+  const campoNovoClienteEl = document.getElementById("np-campo-novo-cliente");
+
+  document.getElementById("btn-abrir-nova-pesquisa").addEventListener("click", () => {
+    formEl.style.display = "block";
+  });
+  document.getElementById("btn-cancelar-nova-pesquisa").addEventListener("click", () => {
+    formEl.style.display = "none";
+  });
+  selectClienteEl.addEventListener("change", () => {
+    campoNovoClienteEl.style.display = selectClienteEl.value === "__novo__" ? "block" : "none";
+  });
+  document.getElementById("btn-criar-pesquisa").addEventListener("click", async () => {
+    await criarPesquisa(clientes, selectClienteEl.value);
+  });
+}
+
+async function criarPesquisa(clientes, clienteSelecionado) {
+  const titulo = document.getElementById("np-titulo").value.trim();
+  const tema = document.getElementById("np-tema").value.trim();
+  const metaTexto = document.getElementById("np-meta").value.trim();
+  const status = document.getElementById("np-status").value;
+  const novoClienteNome = document.getElementById("np-novo-cliente").value.trim();
+
+  if (!titulo) {
+    alert("Escreva o título do projeto.");
+    return;
+  }
+  if (clienteSelecionado === "__novo__" && !novoClienteNome) {
+    alert("Escreva o nome do novo cliente.");
+    return;
+  }
+
+  const btn = document.getElementById("btn-criar-pesquisa");
+  btn.disabled = true;
+
+  let clientId;
+  let clientName;
+  if (clienteSelecionado === "__novo__") {
+    const novoClienteRef = await addDoc(collection(db, "clients"), {
+      name: novoClienteNome,
+      status: "ativo",
+      createdAt: serverTimestamp(),
+    });
+    clientId = novoClienteRef.id;
+    clientName = novoClienteNome;
+  } else {
+    clientId = clienteSelecionado;
+    clientName = clientes.find((c) => c.id === clienteSelecionado)?.name || "";
+  }
+
+  await addDoc(collection(db, "clients", clientId, "projects"), {
+    title: titulo,
+    clientName,
+    theme: tema || null,
+    status,
+    // targetRespondents fica null se o campo vier vazio ou não-numérico — ele só serve
+    // de referência pro admin, nenhuma tela hoje trava sem esse valor.
+    targetRespondents: metaTexto && !Number.isNaN(Number(metaTexto)) ? Number(metaTexto) : null,
+    createdAt: serverTimestamp(),
+  });
+
+  window.location.reload();
+}
 
 async function carregarProjetos(role) {
   // "projects" é uma subcoleção dentro de cada cliente (clients/{clientId}/projects/{id}).
